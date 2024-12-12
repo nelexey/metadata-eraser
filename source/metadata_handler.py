@@ -1,44 +1,56 @@
 from PIL import Image
-from PIL.ExifTags import TAGS
+import piexif
+import os
 
-def get_all_metadata(file_path: str):
+from paths_walker import get_filepaths, get_all_filepaths
 
-    with Image.open(file_path) as img:
+class MetadataHandler:
+    @staticmethod
+    def load_metadata(file_path):
+        """Load metadata from an image file."""
+        if not os.path.exists(file_path):
+            raise FileNotFoundError("File not found")
+        try:
+            return piexif.load(file_path)
+        except piexif.InvalidImageDataError:
+            print(f"Warning: Invalid image data in {file_path}. Skipping.")
+            return None
 
-        exif = img._getexif() if hasattr(img, '_getexif') else None
+    @staticmethod
+    def clear_metadata(file_path):
+        """Clear metadata from an image file and save the cleaned file."""
+        if not os.path.exists(file_path):
+            raise FileNotFoundError("File not found")
+        try:
+            image = Image.open(file_path)
+            data = list(image.getdata())
+            filename, ext = os.path.splitext(file_path)
+            new_path = f"{filename}_cleaned{ext}"
+            image_without_metadata = Image.new(image.mode, image.size)
+            image_without_metadata.putdata(data)
+            image_without_metadata.save(new_path)
+            return new_path
+        except IOError as e:
+            print(f"Error processing image {file_path}: {e}")
+            return None
 
-        info = img.info
+    @staticmethod
+    def process_all_metadata(root_directory, pattern="*"):
+        """Processes metadata for all files in the given directory and subdirectories."""
+        filepaths = get_all_filepaths(root_directory, pattern)
+        results = []
+        if filepaths:
+            for filepath in filepaths:
+                metadata = MetadataHandler.load_metadata(filepath)
+                results.append({'filepath': filepath, 'metadata': metadata})
+        return results
 
-        if exif is not None:
-            for tag_id, value in exif.items():
-                tag = TAGS.get(tag_id, tag_id)
-                print(f"{tag:25}: {value}")
-
-        print("EXIF:", exif)
-        print("\nInfo:", info)
-        print("\nAll image attributes:", vars(img))
-
-        return exif
-
-def update_image_metadata(file_path: str, metadata: dict):
-
-    with Image.open(file_path) as img:
-
-        img.info.clear()
-        img = img.convert("RGB")
-
-
-        if "info" in metadata:
-            img.info.update(metadata["info"])
-
-
-        if "exif" in metadata and metadata["exif"]:
-            exif_bytes = img.getexif()
-            for key, value in metadata["exif"].items():
-                exif_bytes[key] = value
-
-            img.save(file_path, exif=exif_bytes.tobytes())
-        else:
-            img.save(file_path)
-
-
+    @staticmethod
+    def clear_all_metadata(root_directory, pattern="*"):
+        """Clears metadata from all files in the given directory and subdirectories."""
+        filepaths = get_all_filepaths(root_directory, pattern)
+        if filepaths:
+            for filepath in filepaths:
+                cleaned_path = MetadataHandler.clear_metadata(filepath)
+                if cleaned_path:
+                    print(f"Metadata cleared from {filepath}, saved as {cleaned_path}")
