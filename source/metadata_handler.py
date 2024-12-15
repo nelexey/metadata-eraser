@@ -7,7 +7,6 @@ from paths_walker import get_filepaths, get_all_filepaths
 class MetadataHandler:
     @staticmethod
     def load_metadata(file_path):
-        """Load metadata from an image file."""
         if not os.path.exists(file_path):
             raise FileNotFoundError("File not found")
         try:
@@ -18,7 +17,6 @@ class MetadataHandler:
 
     @staticmethod
     def clear_metadata(file_path):
-        """Clear metadata from an image file and save the cleaned file."""
         if not os.path.exists(file_path):
             raise FileNotFoundError("File not found")
         try:
@@ -36,7 +34,6 @@ class MetadataHandler:
 
     @staticmethod
     def process_all_metadata(root_directory, pattern="*"):
-        """Processes metadata for all files in the given directory and subdirectories."""
         filepaths = get_all_filepaths(root_directory, pattern)
         results = []
         if filepaths:
@@ -47,7 +44,6 @@ class MetadataHandler:
 
     @staticmethod
     def clear_all_metadata(root_directory, pattern="*"):
-        """Clears metadata from all files in the given directory and subdirectories."""
         filepaths = get_all_filepaths(root_directory, pattern)
         if filepaths:
             for filepath in filepaths:

@@ -8,7 +8,6 @@ class AppUI:
         self.load_font()
 
     def configure_styles(self):
-        """Apply global styles and themes to the application."""
         dpg.set_global_font_scale(1)
 
         # Colors and theme
@@ -29,7 +28,6 @@ class AppUI:
 
 
     def load_font(self):
-        """Load and bind a multilingual font."""
         with dpg.font_registry():
             default_font = dpg.add_font("/Library/Fonts/JetBrainsMono-Regular.ttf", 16)
             dpg.add_font_range_hint(dpg.mvFontRangeHint_Cyrillic, parent=default_font)
@@ -37,7 +35,6 @@ class AppUI:
         dpg.bind_font(default_font)
 
     def run(self):
-        """Initialize and start the DearPyGui context."""
         dpg.create_viewport(title="Metadata Cleaner UI Template", width=self.width, height=self.height)
         dpg.setup_dearpygui()
         dpg.show_viewport()
